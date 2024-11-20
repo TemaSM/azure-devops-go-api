@@ -93,6 +93,24 @@ func NewClient(ctx context.Context, connection *azuredevops.Connection) (Client,
 	}, nil
 }
 
+func NewClientWithOptions(ctx context.Context, connection *azuredevops.Connection, options ...azuredevops.ClientOptionFunc) (Client, error) {
+	client, err := connection.GetClientByResourceAreaId(ctx, ResourceAreaId)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, fn := range options {
+		if fn == nil {
+			continue
+		}
+		fn(client)
+	}
+
+	return &ClientImpl{
+		Client: *client,
+	}, nil
+}
+
 // [Preview API]
 func (client *ClientImpl) CreateConnectedService(ctx context.Context, args CreateConnectedServiceArgs) (*WebApiConnectedService, error) {
 	if args.ConnectedServiceCreationData == nil {
